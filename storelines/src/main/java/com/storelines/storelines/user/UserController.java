@@ -4,7 +4,7 @@ import com.storelines.storelines.user.bean.dto.UserDTO;
 import com.storelines.storelines.user.bean.UserDTOMapper;
 import com.storelines.storelines.exception.ServiceException;
 import com.storelines.storelines.user.bean.model.UserModel;
-import com.storelines.storelines.variant.service.UserService;
+import com.storelines.storelines.user.service.UserService;
 import com.storelines.storelines.util.ResponseEnvelope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

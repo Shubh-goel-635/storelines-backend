@@ -2,7 +2,8 @@ package com.storelines.storelines.user.dao;
 
 import com.storelines.storelines.exception.DAOException;
 import com.storelines.storelines.user.bean.model.UserModel;
-import com.storelines.storelines.variant.repository.UserRepository;
+
+import com.storelines.storelines.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
