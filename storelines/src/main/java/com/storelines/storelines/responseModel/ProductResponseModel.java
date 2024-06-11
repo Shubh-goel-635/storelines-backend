@@ -2,7 +2,7 @@ package com.storelines.storelines.responseModel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.storelines.storelines.model.ProductModel;
+import com.storelines.storelines.product.bean.model.ProductModel;
 import com.storelines.storelines.util.BaseResponseEntity;
 import lombok.Data;
 import org.springframework.data.domain.Page;
