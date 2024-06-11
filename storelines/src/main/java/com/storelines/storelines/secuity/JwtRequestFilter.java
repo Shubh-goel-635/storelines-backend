@@ -65,5 +65,5 @@ public class JwtRequestFilter  extends OncePerRequestFilter {
         } catch (Exception exception) {
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
-    }s
+    }
 }
