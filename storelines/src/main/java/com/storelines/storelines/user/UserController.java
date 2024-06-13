@@ -15,15 +15,16 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@RestController("/user")
+@RestController
+@RequestMapping("/user")
 public class UserController {
     @Autowired
     private UserService userService;
 
     @PostMapping("/rejisteruser")
-    public ResponseEntity<ResponseEnvelope> saveUser(UserDTO userDTO) {
+    public ResponseEntity<ResponseEnvelope> saveUser(@RequestBody UserDTO userDTO) {
         UserModel userModel = UserDTOMapper.convert(userDTO);
-
+        userModel.setPassword(userDTO.getPassword());
         try {
             UserModel checkEistingUser = userService.getUserByEmail(userModel.getEmail());
             if (checkEistingUser == null) {
@@ -45,19 +46,20 @@ public class UserController {
             if (outputUserModel == null) {
                 return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.NOT_FOUND.value(), "Email not exists"), HttpStatus.OK);
             } else if (!outputUserModel.isActive() || outputUserModel.getFailedAttempts() == 3){
-                userModel.setOtp(userService.generateOtp());
-                userModel.setOtpFailedAttempts(0);
-                userModel.setOtpCreatedAt(LocalDateTime.now());
-                userModel.setActive(false);
-                userService.editUser(userModel);
+                outputUserModel.setOtp(userService.generateOtp());
+                outputUserModel.setOtpFailedAttempts(0);
+                outputUserModel.setFailedAttempts(0);
+                outputUserModel.setOtpCreatedAt(LocalDateTime.now());
+                outputUserModel.setActive(false);
+                userService.editUser(outputUserModel);
                 return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.FORBIDDEN.value(), "Account not activated"), HttpStatus.OK);
             } else if (userService.checkPassword(outputUserModel.getPassword(), outputUserModel.getSalt(), userDTO.getPassword()) && userModel.getFailedAttempts() < 3) {
-                userModel.setFailedAttempts(0);
-                userService.editUser(userModel);
+                outputUserModel.setFailedAttempts(0);
+                userService.editUser(outputUserModel);
                 return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.OK.value(), "Login successful"), HttpStatus.OK);
             } else {
-                userModel.setFailedAttempts(userModel.getFailedAttempts() + 1);
-                userService.editUser(userModel);
+                outputUserModel.setFailedAttempts(outputUserModel.getFailedAttempts() + 1);
+                userService.editUser(outputUserModel);
                 return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.UNAUTHORIZED.value(), "Incorrect password"), HttpStatus.OK);
             }
         } catch (ServiceException e) {
@@ -65,7 +67,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/validateotp")
+    @GetMapping("/validateotp")
     public ResponseEntity<ResponseEnvelope> activate(@RequestParam String email, @RequestParam String otp) {
         try {
             UserModel userModel = userService.getUserByEmail(email);
@@ -77,10 +79,13 @@ public class UserController {
                 userModel.setOtpFailedAttempts(0);
                 userService.editUser(userModel);
                 return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.OK.value()), HttpStatus.OK);
-            } else if (duration.toMinutes() > 10 || userModel.getOtpFailedAttempts() > 3) {
+            } else if (duration.toMinutes() > 10 || userModel.getOtpFailedAttempts() == 3) {
                 userModel.setOtpFailedAttempts(0);
+                userModel.setFailedAttempts(0);
+                userModel.setActive(false);
                 userModel.setOtp(userService.generateOtp());
                 userModel.setOtpCreatedAt(LocalDateTime.now());
+                userService.editUser(userModel);
                 return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.GONE.value(), "OTP expired, new otp sent to email"), HttpStatus.OK);
             } else {
                 userModel.setOtpFailedAttempts(userModel.getOtpFailedAttempts() + 1);
@@ -98,12 +103,8 @@ public class UserController {
             UserModel userModel = UserDTOMapper.convert(userDTO);
             UserModel existingUserModel = userService.getUserByEmail(userModel.getEmail());
 
-            if (!existingUserModel.isActive()) {
-                existingUserModel.setOtpFailedAttempts(0);
-                existingUserModel.setOtp(userService.generateOtp());
-                existingUserModel.setOtpCreatedAt(LocalDateTime.now());
-                userService.editUser(existingUserModel);
-                return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.FORBIDDEN.value(), "Account not activated"), HttpStatus.OK);
+            if (existingUserModel == null) {
+                return new ResponseEntity<>(new ResponseEnvelope(HttpStatus.NOT_FOUND.value(), "Email not exists"), HttpStatus.OK);
             } else {
                 existingUserModel.setPassword(userDTO.getPassword());
                 existingUserModel.setActive(false);

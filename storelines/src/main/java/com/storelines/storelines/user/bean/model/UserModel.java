@@ -8,17 +8,14 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "users")
-public class UserModel implements BaseResponseEntity, UserDetails {
+public class UserModel implements BaseResponseEntity {
     @Id
     private String id;
 
@@ -31,6 +28,9 @@ public class UserModel implements BaseResponseEntity, UserDetails {
     @Indexed(unique = true)
     @Field(name = "email")
     private String email;
+
+    @Field(name = "role")
+    private String role;
 
     @Field(name = "password")
     private String password;
@@ -58,39 +58,4 @@ public class UserModel implements BaseResponseEntity, UserDetails {
 
     @Field(name = "otpCreatedAt")
     private LocalDateTime otpCreatedAt;
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 }
